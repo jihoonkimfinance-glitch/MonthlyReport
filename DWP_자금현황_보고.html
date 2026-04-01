@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>자금현황 월간 보고</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{max-width:480px;margin:0 auto;background:#F4F6FB;}
+body{font-family:-apple-system,"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+     color:#1A1F36;font-size:13px;line-height:1.5;overflow-x:hidden;}
+/* 헤더 */
+.hd{background:#fff;border-bottom:1px solid #EAECF4;padding:16px 16px 12px;}
+.hd-ey{font-size:9px;letter-spacing:0.12em;color:#8B93B0;font-weight:700;margin-bottom:7px;text-transform:uppercase;}
+.hd-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+.hd-title{font-size:18px;font-weight:700;color:#1A1F36;letter-spacing:-0.3px;line-height:1.2;}
+.hd-badge{font-size:9px;font-weight:700;background:#EEF4FF;color:#3B5BDB;border-radius:20px;padding:3px 10px;white-space:nowrap;flex-shrink:0;margin-top:3px;}
+.hd-date{font-size:10px;color:#8B93B0;margin-top:6px;}
+/* 탭 */
+.tab-bar{background:#fff;display:flex;border-bottom:1px solid #EAECF4;padding:0 16px;}
+.tb{flex:1;padding:11px 0;font-size:11px;font-weight:700;color:#8B93B0;
+    text-align:center;cursor:pointer;border-bottom:2px solid transparent;user-select:none;
+    background:none;border-top:none;border-left:none;border-right:none;outline:none;
+    -webkit-appearance:none;appearance:none;}
+.tb.on{color:#3B5BDB;border-bottom-color:#3B5BDB;}
+.ent-bar{background:#fff;display:flex;padding:0 10px;border-bottom:1px solid #EAECF4;overflow-x:auto;}
+.ent-bar::-webkit-scrollbar{display:none;}
+.eb{flex-shrink:0;padding:9px 12px;font-size:10px;font-weight:700;color:#8B93B0;
+    cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;user-select:none;
+    background:none;border-top:none;border-left:none;border-right:none;
+    outline:none;-webkit-appearance:none;appearance:none;}
+.eb.on{color:#3B5BDB;border-bottom-color:#3B5BDB;}
+.view{display:none;}.view.on{display:block;}
+.ent-panel{display:none;}
+.bd{padding:12px 12px 28px;}
+.sec{font-size:9px;font-weight:700;letter-spacing:0.08em;color:#8B93B0;text-transform:uppercase;margin:14px 0 6px;}
+.sec:first-child{margin-top:0;}
+/* KPI 카드 */
+.ki{background:#fff;border:1px solid #EAECF4;border-radius:16px;overflow:hidden;margin-bottom:8px;}
+.ki-top{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #F0F2F8;}
+.ki-net{padding:13px 13px 12px;}
+.ki-net .kl{font-size:9px;color:#8B93B0;font-weight:600;margin-bottom:4px;}
+.ki-net .kv{font-size:18px;font-weight:700;color:#1A1F36;letter-spacing:-0.4px;line-height:1;}
+.ki-net .ku{font-size:10px;font-weight:400;color:#A8AFC9;margin-left:1px;}
+.ki-net .kd{font-size:10px;font-weight:700;margin-top:4px;}
+.ki-loan{padding:13px 13px 12px;border-left:1px solid #F0F2F8;cursor:pointer;
+    background:none;border-top:none;border-right:none;border-bottom:none;
+    outline:none;-webkit-appearance:none;appearance:none;text-align:left;width:100%;}
+.ki-loan:active{background:#F7F9FF;}
+.ki-loan .kl{font-size:9px;color:#8B93B0;font-weight:600;margin-bottom:4px;}
+.ki-loan .kv{font-size:18px;font-weight:700;color:#1A1F36;letter-spacing:-0.4px;line-height:1;}
+.ki-loan .ku{font-size:10px;font-weight:400;color:#A8AFC9;margin-left:1px;}
+.ki-loan .rate{display:inline-block;font-size:9px;font-weight:700;color:#3B5BDB;background:#EEF4FF;padding:2px 6px;border-radius:5px;margin-top:5px;}
+.ki-mid{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #F0F2F8;}
+.ki-cash{padding:11px 13px;cursor:pointer;
+    background:none;border:none;outline:none;
+    -webkit-appearance:none;appearance:none;text-align:left;width:100%;}
+.ki-cash:active{background:#F7F9FF;}
+.ki-cash .kl{font-size:9px;color:#8B93B0;font-weight:600;margin-bottom:4px;}
+.ki-cash .kv{font-size:17px;font-weight:700;color:#1A1F36;letter-spacing:-0.3px;line-height:1;}
+.ki-cash .ku{font-size:10px;font-weight:400;color:#A8AFC9;margin-left:1px;}
+.ki-cash .kd{font-size:10px;font-weight:700;margin-top:4px;}
+.ki-unused{padding:11px 13px;border-left:1px solid #F0F2F8;}
+.ki-unused .kl{font-size:9px;color:#8B93B0;font-weight:600;margin-bottom:4px;}
+.ki-unused .kv{font-size:17px;font-weight:700;color:#1A1F36;letter-spacing:-0.3px;line-height:1;}
+.ki-unused .ku{font-size:10px;font-weight:400;color:#A8AFC9;margin-left:1px;}
+.ki-avail{background:#EEF4FF;padding:12px 13px;display:flex;justify-content:space-between;align-items:center;}
+.ki-avail .kl{font-size:9px;color:#6B83D6;font-weight:700;margin-bottom:3px;}
+.ki-avail .kv{font-size:19px;font-weight:700;color:#2F4AC0;letter-spacing:-0.4px;line-height:1;}
+.ki-avail .ku{font-size:11px;font-weight:400;color:#8BA3E0;margin-left:1px;}
+.ki-avail .sub{font-size:9px;color:#8BA3E0;margin-top:3px;}
+/* 법인 보고사항 */
+.ent-memo{background:#fff;border:1px solid #EAECF4;border-radius:14px;padding:13px 14px;margin-top:8px;margin-bottom:8px;}
+.ent-memo-title{font-size:10px;font-weight:700;color:#1A1F36;margin-bottom:7px;padding-bottom:7px;border-bottom:1px solid #F0F2F8;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:5px;}
+.ent-memo-title::before{content:'';width:3px;height:11px;background:#3B5BDB;border-radius:2px;display:inline-block;flex-shrink:0;}
+.ent-memo-body{font-size:11px;color:#4A5270;line-height:1.7;}
+/* 모달 */
+.modal-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,20,40,0.45);z-index:100;opacity:0;pointer-events:none;transition:opacity .22s;-webkit-transform:translateZ(0);}
+.modal-bg.on{opacity:1;pointer-events:all;}
+.modal{position:fixed;bottom:0;left:0;right:0;width:100%;max-width:480px;margin:0 auto;background:#fff;border-radius:20px 20px 0 0;z-index:101;-webkit-transform:translateY(110%);transform:translateY(110%);transition:-webkit-transform .28s cubic-bezier(.32,.72,0,1);transition:transform .28s cubic-bezier(.32,.72,0,1);max-height:80%;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;}
+.modal.on{-webkit-transform:translateY(0);transform:translateY(0);}
+.modal-handle{width:36px;height:4px;background:#DDE0EA;border-radius:2px;margin:12px auto 0;flex-shrink:0;}
+.modal-hd{display:flex;justify-content:space-between;align-items:center;
+          padding:12px 16px 10px;flex-shrink:0;border-bottom:1px solid #EAECF4;}
+.modal-title{font-size:14px;font-weight:700;color:#1A1F36;}
+.modal-sub{font-size:10px;color:#8B93B0;margin-top:2px;}
+.modal-close{width:28px;height:28px;border-radius:50%;background:#F4F6FB;border:none;
+             cursor:pointer;font-size:14px;color:#8B93B0;flex-shrink:0;}
+.modal-body{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 40px;-webkit-flex:1;flex:1;}
+/* 테이블 */
+.dt{width:100%;border-collapse:collapse;font-size:10px;table-layout:fixed;}
+.dt th{font-size:8px;color:#8B93B0;font-weight:700;padding:0 3px 7px;
+       text-align:left;border-bottom:1px solid #EAECF4;white-space:nowrap;}
+.dt th.r{text-align:right;}
+.dt td{padding:8px 3px;border-bottom:1px solid #F5F6FB;color:#4A5270;vertical-align:top;overflow:hidden;}
+.dt tr:last-child td{border-bottom:none;}
+.dt td.r{text-align:right;color:#1A1F36;font-weight:600;}
+.dt th.c{text-align:center;}
+.dt td.c{text-align:center;}
+.bk{font-size:11px;font-weight:600;color:#1A1F36;}
+.kd{font-size:9px;color:#8B93B0;margin-top:1px;}
+.nt{font-size:9px;color:#A8AFC9;word-break:break-all;}
+.dt-date{font-size:9px;white-space:nowrap;}
+.dt-ft td{padding-top:8px;font-weight:700;font-size:11px;color:#1A1F36;border-top:1.5px solid #D4D8EE;}
+.dt-ft td.r{text-align:right;color:#3B5BDB;}
+.empty{text-align:center;padding:16px 0;color:#A8AFC9;font-size:11px;}
+/* 그룹 보고사항 */
+.memo{background:#fff;border:1px solid #EAECF4;border-radius:14px;overflow:hidden;margin-bottom:8px;}
+.mr{display:flex;gap:8px;padding:10px 13px;border-bottom:1px solid #F5F6FB;align-items:flex-start;}
+.mr:last-child{border:none;}
+.tag{font-size:8px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap;flex-shrink:0;margin-top:2px;}
+.tb2{background:#EEF4FF;color:#2F4AC0;}.to{background:#FFF4E0;color:#9A5A00;}.tg{background:#F0F2F8;color:#4A5270;}
+.mt{font-size:11px;color:#4A5270;line-height:1.6;}
+.ft{font-size:9px;color:#A8AFC9;text-align:center;padding:4px 14px 20px;line-height:1.9;}
+.divl{width:24px;height:1px;background:#E2E5F0;margin:14px auto 12px;}
+.up{color:#C93030;font-weight:700;}.dn{color:#0F7A52;font-weight:700;}.neu{color:#8B93B0;}
+.arr{color:#3B5BDB;}
+</style>
+</head>
+<body>
+
+<!-- 모달 배경 -->
+<div class="modal-bg" id="modal-bg" onclick="closeModal()" ontouchstart="" ontouchstart=""></div>
+
+<!-- 모달들 -->
+<div class="modal" id="m-g-loan">
+  <div class="modal-handle"></div>
+  <div class="modal-hd">
+    <div>
+      <div class="modal-title">차입금 내역</div>
+      <div class="modal-sub">그룹 전체 (국내법인) · 가중금리 3.44%</div>
+    </div>
+    <button class="modal-close" onclick="closeModal()" ontouchstart="">✕</button>
+  </div>
+  <div class="modal-body"><table class="dt">
+  <colgroup>
+    <col style="width:25%"><col style="width:20%">
+    <col style="width:15%"><col style="width:40%">
+  </colgroup>
+  <thead><tr>
+    <th>금융기관 / 법인</th><th class="r">금액(백만)</th>
+    <th class="c">금리</th><th class="c">실행일~만기일</th>
+  </tr></thead>
+  <tbody><tr>
+      <td><div class="bk">산업은행</div><div class="kd">DWPH</div>
+          <div class="kd">시설자금</div></td>
+      <td class="r">9,300</td>
+      <td class="c">3.10%</td>
+      <td class="c dt-date">25.04.15~28.04.15</td>
+    </tr><tr>
+      <td><div class="bk">수출입은행</div><div class="kd">동화약품㈜</div>
+          <div class="kd">무역자금</div></td>
+      <td class="r">4,000</td>
+      <td class="c">2.93%</td>
+      <td class="c dt-date">25.08.01~26.08.03</td>
+    </tr><tr>
+      <td><div class="bk">산업은행</div><div class="kd">동화약품㈜</div>
+          <div class="kd">시설자금</div></td>
+      <td class="r">38,800</td>
+      <td class="c">3.50%</td>
+      <td class="c dt-date">23.12.06~26.12.06</td>
+    </tr><tr>
+      <td><div class="bk">산업은행</div><div class="kd">동화약품㈜</div>
+          <div class="kd">운영자금</div></td>
+      <td class="r">15,000</td>
+      <td class="c">3.67%</td>
+      <td class="c dt-date">25.08.01~26.08.01</td>
+    </tr><tr>
+      <td><div class="bk">농협은행</div><div class="kd">동화약품㈜</div>
+          <div class="kd">운영자금</div></td>
+      <td class="r">10,000</td>
+      <td class="c">3.81%</td>
+      <td class="c dt-date">25.07.31~26.07.31</td>
+    </tr><tr>
+      <td><div class="bk">씨티은행</div><div class="kd">동화약품㈜</div>
+          <div class="kd">외화스왑</div></td>
+      <td class="r">13,358</td>
+      <td class="c">4.39%</td>
+      <td class="c dt-date">24.08.30~27.08.30</td>
+    </tr><tr>
+      <td><div class="bk">신한은행</div><div class="kd">동화지앤피㈜</div>
+          <div class="kd">운영자금</div></td>
+      <td class="r">22,500</td>
+      <td class="c">2.70%</td>
+      <td class="c dt-date">26.02.25~27.02.25</td>
+    </tr></tbody>
+  <tfoot class="dt-ft"><tr>
+    <td>합 계</td>
+    <td class="r">112,958</td>
+    <td class="c">3.44%</td>
+    <td></td>
+  </tr></tfoot>
+</table></div>
+</div><div class="modal" id="m-g-cash">
+  <div class="modal-handle"></div>
+  <div class="modal-hd">
+    <div>
+      <div class="modal-title">가용자금 내역</div>
+      <div class="modal-sub">그룹 전체 (국내법인)</div>
+    </div>
+    <button class="modal-close" onclick="closeModal()" ontouchstart="">✕</button>
+  </div>
+  <div class="modal-body"><table class="dt">
+  <colgroup>
+    <col style="width:27%"><col style="width:16%">
+    <col style="width:13%"><col style="width:26%"><col style="width:18%">
+  </colgroup>
+  <thead><tr>
+    <th>금융기관 / 법인</th><th class="r">금액(백만)</th>
+    <th class="c">금리</th><th class="c">시작일~만기일</th><th class="c">비고</th>
+  </tr></thead>
+  <tbody><tr>
+      <td><div class="bk">농협은행</div><div class="kd">DWPH</div>
+          <div class="kd">MMT(수시)</div></td>
+      <td class="r">666</td>
+      <td class="c">2.50%</td>
+      <td class="c dt-date">—</td>
+      <td class="c nt">수시입출금</td>
+    </tr><tr>
+      <td><div class="bk">우리은행</div><div class="kd">DWPH</div>
+          <div class="kd">보통예금</div></td>
+      <td class="r">5</td>
+      <td class="c">0.10%</td>
+      <td class="c dt-date">—</td>
+      <td class="c nt">수금통장</td>
+    </tr><tr>
+      <td><div class="bk">하나은행</div><div class="kd">동화약품㈜</div>
+          <div class="kd">MMT</div></td>
+      <td class="r">4,529</td>
+      <td class="c">2.50%</td>
+      <td class="c dt-date">—</td>
+      <td class="c nt">수시입출금</td>
+    </tr><tr>
+      <td><div class="bk">기업은행 외</div><div class="kd">동화약품㈜</div>
+          <div class="kd">보통예금</div></td>
+      <td class="r">14</td>
+      <td class="c">0.10%</td>
+      <td class="c dt-date">—</td>
+      <td class="c nt">수금계좌</td>
+    </tr><tr>
+      <td><div class="bk">외화MMDA</div><div class="kd">동화약품㈜</div>
+          <div class="kd">USD</div></td>
+      <td class="r">575</td>
+      <td class="c">2.40%</td>
+      <td class="c dt-date">—</td>
+      <td class="c nt">$ 379,761.30</td>
+    </tr><tr>
+      <td><div class="bk">외화MMDA</div><div class="kd">동화약품㈜</div>
+          <div class="kd">JPY</div></td>
+      <td class="r">156</td>
+      <td class="c">2.40%</td>
+      <td class="c dt-date">—</td>
+      <td class="c nt">¥ 16,457,480</td>
+    </tr><tr>
+      <td><div class="bk">신한은행 외</div><div class="kd">메디쎄이㈜</div>
+          <div class="kd">보통예금 외</div></td>
+      <td class="r">578</td>
+      <td class="c">0.10%</td>
+      <td class="c dt-date">—</td>
+      <td class="c nt">수금계좌</td>
+    </tr><tr>
+      <td><div class="bk">우리은행</div><div class="kd">메디쎄이㈜</div>
+          <div class="kd">MMT</div></td>
+      <td class="r">2,474</td>
+      <td class="c">2.50%</td>
+      <td class="c dt-date">—</td>
+      <td class="c nt">수시입출금</td>
+    </tr><tr>
+      <td><div class="bk">신한은행</div><div class="kd">메디쎄이㈜</div>
+          <div class="kd">정기예금</div></td>
+      <td class="r">2,000</td>
+      <td class="c">3.06%</td>
+      <td class="c dt-date">25.11.17~26.05.17</td>
+      <td class="c nt">기간물</td>
+    </tr><tr>
+      <td><div class="bk">NH증권</div><div class="kd">메디쎄이㈜</div>
+          <div class="kd">정기예금신탁</div></td>
+      <td class="r">2,000</td>
+      <td class="c">3.30%</td>
+      <td class="c dt-date">26.03.24~26.09.28</td>
+      <td class="c nt">기간물</td>
+    </tr><tr>
+      <td><div class="bk">대신증권</div><div class="kd">메디쎄이㈜</div>
+          <div class="kd">ELB(원리금보장)</div></td>
+      <td class="r">2,000</td>
+      <td class="c">3.30%</td>
+      <td class="c dt-date">26.03.31~26.09.30</td>
+      <td class="c nt">기간물</td>
+    </tr><tr>
+      <td><div class="bk">외화MMDA</div><div class="kd">메디쎄이㈜</div>
+          <div class="kd">USD</div></td>
+      <td class="r">984</td>
+      <td class="c">2.50%</td>
+      <td class="c dt-date">—</td>
+      <td class="c nt">$ 650,186.63</td>
+    </tr><tr>
+      <td><div class="bk">NH증권</div><div class="kd">동화지앤피㈜</div>
+          <div class="kd">MMT</div></td>
+      <td class="r">4,370</td>
+      <td class="c">2.70%</td>
+      <td class="c dt-date">—</td>
+      <td class="c nt">수시입출금</td>
+    </tr><tr>
+      <td><div class="bk">NH증권</div><div class="kd">동화지앤피㈜</div>
+          <div class="kd">발행어음</div></td>
+      <td class="r">1,000</td>
+      <td class="c">3.30%</td>
+      <td class="c dt-date">25.04.25~26.04.27</td>
+      <td class="c nt"></td>
+    </tr></tbody>
+  <tfoot class="dt-ft"><tr>
+    <td>합 계</td>
+    <td class="r">21,353</td>
+    <td class="c">—</td><td></td><td></td>
+  </tr></tfoot>
+</table></div>
+</div><div class="modal" id="m-DWPH-loan">
+  <div class="modal-handle"></div>
+  <div class="modal-hd">
+    <div>
+      <div class="modal-title">차입금 내역</div>
+      <div class="modal-sub">DWPH · 가중금리 3.10%</div>
+    </div>
+    <button class="modal-close" onclick="closeModal()" ontouchstart="">✕</button>
+  </div>
+  <div class="modal-body"><table class="dt">
+  <colgroup>
+    <col style="width:25%"><col style="width:20%">
+    <col style="width:15%"><col style="width:40%">
+  </colgroup>
+  <thead><tr>
+    <th>금융기관</th><th class="r">금액(백만)</th>
+    <th class="c">금리</th><th class="c">실행일~만기일</th>
+  </tr></thead>
+  <tbody><tr>
+      <td><div class="bk">산업은행</div>
+          <div class="kd">시설자금</div></td>
+      <td class="r">9,300</td>
+      <td class="c">3.10%</td>
+      <td class="c dt-date">25.04.15~28.04.15</td>
+    </tr></tbody>
+  <tfoot class="dt-ft"><tr>
+    <td>합 계</td>
+    <td class="r">9,300</td>
+    <td class="c">3.10%</td>
+    <td></td>
+  </tr></tfoot>
+</table></div>
+</div><div class="modal" id="m-DWPH-cash">
+  <div class="modal-handle"></div>
+  <div class="modal-hd">
+    <div>
+      <div class="modal-title">가용자금 내역</div>
+      <div class="modal-sub">DWPH</div>
+    </div>
+    <button class="modal-close" onclick="closeModal()" ontouchstart="">✕</button>
+  </div>
+  <div class="modal-body"><table class="dt">
+  <colgroup>
+    <col style="width:27%"><col style="width:16%">
+    <col style="width:13%"><col style="width:26%"><col style="width:18%">
+  </colgroup>
+  <thead><tr>
+    <th>금융기관 · 상품</th><th class="r">금액(백만)</th>
+    <th class="c">금리</th><th class="c">시작일~만기일</th><th class="c">비고</th>
+  </tr></thead>
+  <tbody><tr>
+      <td><div class="bk">농협은행</div>
+          <div class="kd">MMT(수시)</div></td>
+      <td class="r">666</td>
+      <td class="c">2.50%</td>
+      <td class="c dt-date">—</td>
+      <td class="c nt">수시입출금</td>
+    </tr><tr>
+      <td><div class="bk">우리은행</div>
+          <div class="kd">보통예금</div></td>
+      <td class="r">5</td>
+      <td class="c">0.10%</td>
+      <td class="c dt-date">—</td>
+      <td class="c nt">수금통장</td>
+    </tr></tbody>
+  <tfoot class="dt-ft"><tr>
+    <td>합 계</td>
+    <td class="r">671</td>
+    <td class="c">—</td><td></td><td></td>
+  </tr></tfoot>
+</table></div>
+</div><div class="modal" id="m-동화약품-loan">
+  <div class="modal-handle"></div>
+  <div class="modal-hd">
+    <div>
+      <div class="modal-title">차입금 내역</div>
+      <div class="modal-sub">동화약품㈜ · 가중금리 3.69%</div>
+    </div>
+    <button class="modal-close" onclick="closeModal()" ontouchstart="">✕</button>
+  </div>
+  <div class="modal-body"><table class="dt">
+  <colgroup>
+    <col style="width:25%"><col style="width:20%">
+    <col style="width:15%"><col style="width:40%">
+  </colgroup>
+  <thead><tr>
+    <th>금융기관</th><th class="r">금액(백만)</th>
+    <th class="c">금리</th><th class="c">실행일~만기일</th>
+  </tr></thead>
+  <tbody><tr>
+      <td><div class="bk">수출입은행</div>
+          <div class="kd">무역자금</div></td>
+      <td class="r">4,000</td>
+      <td class="c">2.93%</td>
+      <td class="c dt-date">25.08.01~26.08.03</td>
+    </tr><tr>
+      <td><div class="bk">산업은행</div>
+          <div class="kd">시설자금</div></td>
+      <td class="r">38,800</td>
+      <td class="c">3.50%</td>
+      <td class="c dt-date">23.12.06~26.12.06</td>
+    </tr><tr>
+      <td><div class="bk">산업은행</div>
+          <div class="kd">운영자금</div></td>
+      <td class="r">15,000</td>
+      <td class="c">3.67%</td>
+      <td class="c dt-date">25.08.01~26.08.01</td>
+    </tr><tr>
+      <td><div class="bk">농협은행</div>
+          <div class="kd">운영자금</div></td>
+      <td class="r">10,000</td>
+      <td class="c">3.81%</td>
+      <td class="c dt-date">25.07.31~26.07.31</td>
+    </tr><tr>
+      <td><div class="bk">씨티은행</div>
+          <div class="kd">외화스왑</div></td>
+      <td class="r">13,358</td>
+      <td class="c">4.39%</td>
+      <td class="c dt-date">24.08.30~27.08.30</td>
+    </tr></tbody>
+  <tfoot class="dt-ft"><tr>
+    <td>합 계</td>
+    <td class="r">81,158</td>
+    <td class="c">3.69%</td>
+    <td></td>
+  </tr></tfoot>
+</table></div>
+</div><div class="modal" id="m-동화약품-cash">
+  <div class="modal-handle"></div>
+  <div class="modal-hd">
+    <div>
+      <div class="modal-title">가용자금 내역</div>
+      <div class="modal-sub">동화약품㈜</div>
+    </div>
+    <button class="modal-close" onclick="closeModal()" ontouchstart="">✕</button>
+  </div>
+  <div class="modal-body"><table class="dt">
+  <colgroup>
+    <col style="width:27%"><col style="width:16%">
+    <col style="width:13%"><col style="width:26%"><col style="width:18%">
+  </colgroup>
+  <thead><tr>
+    <th>금융기관 · 상품</th><th class="r">금액(백만)</th>
+    <th class="c">금리</th><th class="c">시작일~만기일</th><th class="c">비고</th>
+  </tr></thead>
+  <tbody><tr>
+      <td><div class="bk">하나은행</div>
+          <div class="kd">MMT</div></td>
+      <td class="r">4,529</td>
+      <td class="c">2.50%</td>
+      <td class="c dt-date">—</td>
+      <td class="c nt">수시입출금</td>
+    </tr><tr>
+      <td><div class="bk">기업은행 외</div>
+          <div class="kd">보통예금</div></td>
+      <td class="r">14</td>
+      <td class="c">0.10%</td>
+      <td class="c dt-date">—</td>
+      <td class="c nt">수금계좌</td>
+    </tr><tr>
+      <td><div class="bk">외화MMDA</div>
+          <div class="kd">USD</div></td>
+      <td class="r">575</td>
+      <td class="c">2.40%</td>
+      <td class="c dt-date">—</td>
+      <td class="c nt">$ 379,761.30</td>
+    </tr><tr>
+      <td><div class="bk">외화MMDA</div>
+          <div class="kd">JPY</div></td>
+      <td class="r">156</td>
+      <td class="c">2.40%</td>
+      <td class="c dt-date">—</td>
+      <td class="c nt">¥ 16,457,480</td>
+    </tr></tbody>
+  <tfoot class="dt-ft"><tr>
+    <td>합 계</td>
+    <td class="r">5,273</td>
+    <td class="c">—</td><td></td><td></td>
+  </tr></tfoot>
+</table></div>
+</div><div class="modal" id="m-메디쎄이-loan">
+  <div class="modal-handle"></div>
+  <div class="modal-hd">
+    <div>
+      <div class="modal-title">차입금 내역</div>
+      <div class="modal-sub">메디쎄이㈜ · 가중금리 —</div>
+    </div>
+    <button class="modal-close" onclick="closeModal()" ontouchstart="">✕</button>
+  </div>
+  <div class="modal-body"><div class="empty">입력된 차입 내역이 없습니다</div></div>
+</div><div class="modal" id="m-메디쎄이-cash">
+  <div class="modal-handle"></div>
+  <div class="modal-hd">
+    <div>
+      <div class="modal-title">가용자금 내역</div>
+      <div class="modal-sub">메디쎄이㈜</div>
+    </div>
+    <button class="modal-close" onclick="closeModal()" ontouchstart="">✕</button>
+  </div>
+  <div class="modal-body"><table class="dt">
+  <colgroup>
+    <col style="width:27%"><col style="width:16%">
+    <col style="width:13%"><col style="width:26%"><col style="width:18%">
+  </colgroup>
+  <thead><tr>
+    <th>금융기관 · 상품</th><th class="r">금액(백만)</th>
+    <th class="c">금리</th><th class="c">시작일~만기일</th><th class="c">비고</th>
+  </tr></thead>
+  <tbody><tr>
+      <td><div class="bk">신한은행 외</div>
+          <div class="kd">보통예금 외</div></td>
+      <td class="r">578</td>
+      <td class="c">0.10%</td>
+      <td class="c dt-date">—</td>
+      <td class="c nt">수금계좌</td>
+    </tr><tr>
+      <td><div class="bk">우리은행</div>
+          <div class="kd">MMT</div></td>
+      <td class="r">2,474</td>
+      <td class="c">2.50%</td>
+      <td class="c dt-date">—</td>
+      <td class="c nt">수시입출금</td>
+    </tr><tr>
+      <td><div class="bk">신한은행</div>
+          <div class="kd">정기예금</div></td>
+      <td class="r">2,000</td>
+      <td class="c">3.06%</td>
+      <td class="c dt-date">25.11.17~26.05.17</td>
+      <td class="c nt">기간물</td>
+    </tr><tr>
+      <td><div class="bk">NH증권</div>
+          <div class="kd">정기예금신탁</div></td>
+      <td class="r">2,000</td>
+      <td class="c">3.30%</td>
+      <td class="c dt-date">26.03.24~26.09.28</td>
+      <td class="c nt">기간물</td>
+    </tr><tr>
+      <td><div class="bk">대신증권</div>
+          <div class="kd">ELB(원리금보장)</div></td>
+      <td class="r">2,000</td>
+      <td class="c">3.30%</td>
+      <td class="c dt-date">26.03.31~26.09.30</td>
+      <td class="c nt">기간물</td>
+    </tr><tr>
+      <td><div class="bk">외화MMDA</div>
+          <div class="kd">USD</div></td>
+      <td class="r">984</td>
+      <td class="c">2.50%</td>
+      <td class="c dt-date">—</td>
+      <td class="c nt">$ 650,186.63</td>
+    </tr></tbody>
+  <tfoot class="dt-ft"><tr>
+    <td>합 계</td>
+    <td class="r">10,036</td>
+    <td class="c">—</td><td></td><td></td>
+  </tr></tfoot>
+</table></div>
+</div><div class="modal" id="m-동화지앤피-loan">
+  <div class="modal-handle"></div>
+  <div class="modal-hd">
+    <div>
+      <div class="modal-title">차입금 내역</div>
+      <div class="modal-sub">동화지앤피㈜ · 가중금리 2.70%</div>
+    </div>
+    <button class="modal-close" onclick="closeModal()" ontouchstart="">✕</button>
+  </div>
+  <div class="modal-body"><table class="dt">
+  <colgroup>
+    <col style="width:25%"><col style="width:20%">
+    <col style="width:15%"><col style="width:40%">
+  </colgroup>
+  <thead><tr>
+    <th>금융기관</th><th class="r">금액(백만)</th>
+    <th class="c">금리</th><th class="c">실행일~만기일</th>
+  </tr></thead>
+  <tbody><tr>
+      <td><div class="bk">신한은행</div>
+          <div class="kd">운영자금</div></td>
+      <td class="r">22,500</td>
+      <td class="c">2.70%</td>
+      <td class="c dt-date">26.02.25~27.02.25</td>
+    </tr></tbody>
+  <tfoot class="dt-ft"><tr>
+    <td>합 계</td>
+    <td class="r">22,500</td>
+    <td class="c">2.70%</td>
+    <td></td>
+  </tr></tfoot>
+</table></div>
+</div><div class="modal" id="m-동화지앤피-cash">
+  <div class="modal-handle"></div>
+  <div class="modal-hd">
+    <div>
+      <div class="modal-title">가용자금 내역</div>
+      <div class="modal-sub">동화지앤피㈜</div>
+    </div>
+    <button class="modal-close" onclick="closeModal()" ontouchstart="">✕</button>
+  </div>
+  <div class="modal-body"><table class="dt">
+  <colgroup>
+    <col style="width:27%"><col style="width:16%">
+    <col style="width:13%"><col style="width:26%"><col style="width:18%">
+  </colgroup>
+  <thead><tr>
+    <th>금융기관 · 상품</th><th class="r">금액(백만)</th>
+    <th class="c">금리</th><th class="c">시작일~만기일</th><th class="c">비고</th>
+  </tr></thead>
+  <tbody><tr>
+      <td><div class="bk">NH증권</div>
+          <div class="kd">MMT</div></td>
+      <td class="r">4,370</td>
+      <td class="c">2.70%</td>
+      <td class="c dt-date">—</td>
+      <td class="c nt">수시입출금</td>
+    </tr><tr>
+      <td><div class="bk">NH증권</div>
+          <div class="kd">발행어음</div></td>
+      <td class="r">1,000</td>
+      <td class="c">3.30%</td>
+      <td class="c dt-date">25.04.25~26.04.27</td>
+      <td class="c nt"></td>
+    </tr></tbody>
+  <tfoot class="dt-ft"><tr>
+    <td>합 계</td>
+    <td class="r">5,373</td>
+    <td class="c">—</td><td></td><td></td>
+  </tr></tfoot>
+</table></div>
+</div>
+
+<!-- 헤더 -->
+<div class="hd">
+  <div class="hd-ey">DWPH 재경부문 금융팀</div>
+  <div class="hd-row">
+    <div class="hd-title">자금현황 월간 보고</div>
+    <div class="hd-badge">월 마감 확정</div>
+  </div>
+  <div class="hd-date">기준: 2026년 03월</div>
+</div>
+
+<!-- 메인 탭 -->
+<div class="tab-bar">
+  <button class="tb" onclick="swT('vg',this)" type="button" style="color:#3B5BDB;border-bottom-color:#3B5BDB;">그룹 연결 <sup style="font-size:7px;font-weight:600;color:#8B93B0;vertical-align:super;">국내법인</sup></button>
+  <button class="tb" onclick="swT('ve',this)" type="button">개별 법인</button>
+</div>
+
+<!-- 그룹 연결 -->
+<div class="view" id="vg" style="display:block;"><div class="bd">
+  <div class="sec">핵심 지표</div>
+  <div class="ki">
+  <div class="ki-top">
+    <div class="ki-net">
+      <div class="kl">순차입금</div>
+      <div class="kv">91,605<span class="ku">백만</span></div>
+      <div class="kd"><span class="dn">▼ 9,435</span></div>
+    </div>
+    <button class="ki-loan" onclick="openModal('m-g-loan')" type="button">
+      <div class="kl">차입금 <span class="arr">↗</span></div>
+      <div class="kv">112,958<span class="ku">백만</span></div>
+      <div class="rate">가중금리 3.44%</div>
+    </button>
+  </div>
+  <div class="ki-mid">
+    <button class="ki-cash" onclick="openModal('m-g-cash')" type="button">
+      <div class="kl">가용자금 <span class="arr">↗</span></div>
+      <div class="kv">21,353<span class="ku">백만</span></div>
+      <div class="kd"><span class="dn">▼ 565</span></div>
+    </button>
+    <div class="ki-unused">
+      <div class="kl">미사용 여신한도</div>
+      <div class="kv">34,200<span class="ku">백만</span></div>
+    </div>
+  </div>
+  <div class="ki-avail">
+    <div>
+      <div class="kl">총 가용여력</div>
+      <div class="kv">55,553<span class="ku">백만</span></div>
+      <div class="sub">가용자금 + 미사용한도</div>
+    </div>
+    <div style="text-align:right;flex-shrink:0;">
+      <div class="kl" style="color:#6B83D6;">전월比</div>
+      <div style="font-size:11px;font-weight:700;"><span class="up">▲ 9,435</span></div>
+    </div>
+  </div>
+</div>
+  <div class="sec">금융팀 주요 보고사항</div>
+  <div class="memo"><div class="mr"><span class="tag tb2">금리</span><span class="mt">금리 급등에 회사채 발행 24% 급감…기업 자금조달 ‘빨간불’<br>(AA-급 3년 만기 회사채, 1년 새 3.123%→4.215%까지 급등)</span></div><div class="mr"><span class="tag to">환율</span><span class="mt">USD/KRW = 1,534.30 전월말 대비 ↑67.8원<br>(이란 전쟁 장기화 우려)</span></div></div>
+  <div class="ft"><div class="divl"></div>단위: 백만원 | 개별 법인 마감보고 (TS제외)<br>© DWPH Finance Team (Internal Use Only)</div>
+</div></div>
+
+<!-- 개별 법인 -->
+<div class="view" id="ve" style="display:none;">
+  <div class="ent-bar">
+    <button class="eb" onclick="swE(1,this)" type="button" style="color:#3B5BDB;border-bottom:2px solid #3B5BDB;">DWPH</button>
+<button class="eb" onclick="swE(2,this)" type="button">동화약품</button>
+<button class="eb" onclick="swE(3,this)" type="button">메디쎄이</button>
+<button class="eb" onclick="swE(4,this)" type="button">동화지앤피</button>
+
+  </div>
+  <div class="ent-panel" id="ep-1">
+  <div class="bd">
+    <div class="sec" style="margin-top:0;">핵심 지표</div>
+    <div class="ki">
+  <div class="ki-top">
+    <div class="ki-net">
+      <div class="kl">순차입금</div>
+      <div class="kv">8,629<span class="ku">백만</span></div>
+      <div class="kd"><span class="dn">▼ 216</span></div>
+    </div>
+    <button class="ki-loan" onclick="openModal('m-DWPH-loan')" type="button">
+      <div class="kl">차입금 <span class="arr">↗</span></div>
+      <div class="kv">9,300<span class="ku">백만</span></div>
+      <div class="rate">가중금리 3.10%</div>
+    </button>
+  </div>
+  <div class="ki-mid">
+    <button class="ki-cash" onclick="openModal('m-DWPH-cash')" type="button">
+      <div class="kl">가용자금 <span class="arr">↗</span></div>
+      <div class="kv">671<span class="ku">백만</span></div>
+      <div class="kd"><span class="up">▲ 216</span></div>
+    </button>
+    <div class="ki-unused">
+      <div class="kl">미사용 여신한도</div>
+      <div class="kv">3,000<span class="ku">백만</span></div>
+    </div>
+  </div>
+  <div class="ki-avail">
+    <div>
+      <div class="kl">총 가용여력</div>
+      <div class="kv">3,671<span class="ku">백만</span></div>
+      <div class="sub">가용자금 + 미사용한도</div>
+    </div>
+    <div style="text-align:right;flex-shrink:0;">
+      <div class="kl" style="color:#6B83D6;">전월比</div>
+      <div style="font-size:11px;font-weight:700;"><span class="up">▲ 216</span></div>
+    </div>
+  </div>
+</div>
+    <div class="ent-memo">
+  <div class="ent-memo-title">DWPH 주요 보고사항</div>
+  <div class="ent-memo-body">DWPH 농협은행 한도대출(30억, 사용액없음) 만기연장 예정(4/15)</div>
+</div>
+    <div class="ft"><div class="divl"></div>단위: 백만원 | 개별 법인 마감보고 (TS제외)<br>© DWPH Finance Team (Internal Use Only)</div>
+  </div>
+</div><div class="ent-panel" id="ep-2" style="display:none">
+  <div class="bd">
+    <div class="sec" style="margin-top:0;">핵심 지표</div>
+    <div class="ki">
+  <div class="ki-top">
+    <div class="ki-net">
+      <div class="kl">순차입금</div>
+      <div class="kv">75,885<span class="ku">백만</span></div>
+      <div class="kd"><span class="dn">▼ 9,707</span></div>
+    </div>
+    <button class="ki-loan" onclick="openModal('m-동화약품-loan')" type="button">
+      <div class="kl">차입금 <span class="arr">↗</span></div>
+      <div class="kv">81,158<span class="ku">백만</span></div>
+      <div class="rate">가중금리 3.69%</div>
+    </button>
+  </div>
+  <div class="ki-mid">
+    <button class="ki-cash" onclick="openModal('m-동화약품-cash')" type="button">
+      <div class="kl">가용자금 <span class="arr">↗</span></div>
+      <div class="kv">5,273<span class="ku">백만</span></div>
+      <div class="kd"><span class="dn">▼ 293</span></div>
+    </button>
+    <div class="ki-unused">
+      <div class="kl">미사용 여신한도</div>
+      <div class="kv">31,200<span class="ku">백만</span></div>
+    </div>
+  </div>
+  <div class="ki-avail">
+    <div>
+      <div class="kl">총 가용여력</div>
+      <div class="kv">36,473<span class="ku">백만</span></div>
+      <div class="sub">가용자금 + 미사용한도</div>
+    </div>
+    <div style="text-align:right;flex-shrink:0;">
+      <div class="kl" style="color:#6B83D6;">전월比</div>
+      <div style="font-size:11px;font-weight:700;"><span class="up">▲ 9,707</span></div>
+    </div>
+  </div>
+</div>
+    
+    <div class="ft"><div class="divl"></div>단위: 백만원 | 개별 법인 마감보고 (TS제외)<br>© DWPH Finance Team (Internal Use Only)</div>
+  </div>
+</div><div class="ent-panel" id="ep-3" style="display:none">
+  <div class="bd">
+    <div class="sec" style="margin-top:0;">핵심 지표</div>
+    <div class="ki">
+  <div class="ki-top">
+    <div class="ki-net">
+      <div class="kl">순차입금</div>
+      <div class="kv">-10,036<span class="ku">백만</span></div>
+      <div class="kd"><span class="up">▲ 488</span></div>
+    </div>
+    <button class="ki-loan" onclick="openModal('m-메디쎄이-loan')" type="button">
+      <div class="kl">차입금 <span class="arr">↗</span></div>
+      <div class="kv">—<span class="ku">백만</span></div>
+      <div class="rate">가중금리 —</div>
+    </button>
+  </div>
+  <div class="ki-mid">
+    <button class="ki-cash" onclick="openModal('m-메디쎄이-cash')" type="button">
+      <div class="kl">가용자금 <span class="arr">↗</span></div>
+      <div class="kv">10,036<span class="ku">백만</span></div>
+      <div class="kd"><span class="dn">▼ 488</span></div>
+    </button>
+    <div class="ki-unused">
+      <div class="kl">미사용 여신한도</div>
+      <div class="kv">—<span class="ku">백만</span></div>
+    </div>
+  </div>
+  <div class="ki-avail">
+    <div>
+      <div class="kl">총 가용여력</div>
+      <div class="kv">10,036<span class="ku">백만</span></div>
+      <div class="sub">가용자금 + 미사용한도</div>
+    </div>
+    <div style="text-align:right;flex-shrink:0;">
+      <div class="kl" style="color:#6B83D6;">전월比</div>
+      <div style="font-size:11px;font-weight:700;"><span class="dn">▼ 488</span></div>
+    </div>
+  </div>
+</div>
+    
+    <div class="ft"><div class="divl"></div>단위: 백만원 | 개별 법인 마감보고 (TS제외)<br>© DWPH Finance Team (Internal Use Only)</div>
+  </div>
+</div><div class="ent-panel" id="ep-4" style="display:none">
+  <div class="bd">
+    <div class="sec" style="margin-top:0;">핵심 지표</div>
+    <div class="ki">
+  <div class="ki-top">
+    <div class="ki-net">
+      <div class="kl">순차입금</div>
+      <div class="kv">17,127<span class="ku">백만</span></div>
+      <div class="kd"><span class="neu">전월 동일</span></div>
+    </div>
+    <button class="ki-loan" onclick="openModal('m-동화지앤피-loan')" type="button">
+      <div class="kl">차입금 <span class="arr">↗</span></div>
+      <div class="kv">22,500<span class="ku">백만</span></div>
+      <div class="rate">가중금리 2.70%</div>
+    </button>
+  </div>
+  <div class="ki-mid">
+    <button class="ki-cash" onclick="openModal('m-동화지앤피-cash')" type="button">
+      <div class="kl">가용자금 <span class="arr">↗</span></div>
+      <div class="kv">5,373<span class="ku">백만</span></div>
+      <div class="kd"><span class="neu">전월 동일</span></div>
+    </button>
+    <div class="ki-unused">
+      <div class="kl">미사용 여신한도</div>
+      <div class="kv">—<span class="ku">백만</span></div>
+    </div>
+  </div>
+  <div class="ki-avail">
+    <div>
+      <div class="kl">총 가용여력</div>
+      <div class="kv">5,373<span class="ku">백만</span></div>
+      <div class="sub">가용자금 + 미사용한도</div>
+    </div>
+    <div style="text-align:right;flex-shrink:0;">
+      <div class="kl" style="color:#6B83D6;">전월比</div>
+      <div style="font-size:11px;font-weight:700;"><span class="neu">전월 동일</span></div>
+    </div>
+  </div>
+</div>
+    
+    <div class="ft"><div class="divl"></div>단위: 백만원 | 개별 법인 마감보고 (TS제외)<br>© DWPH Finance Team (Internal Use Only)</div>
+  </div>
+</div>
+</div>
+
+<script>
+var _modal=null;
+
+function openModal(id){
+  if(_modal){_modal.style.webkitTransform='translateY(110%)';_modal.style.transform='translateY(110%)';}
+  var bg=document.getElementById('modal-bg');
+  bg.style.opacity='1';bg.style.pointerEvents='all';
+  var m=document.getElementById(id);
+  m.style.webkitTransform='translateY(0)';m.style.transform='translateY(0)';
+  _modal=m;
+  document.body.style.overflow='hidden';
+}
+
+function closeModal(){
+  if(_modal){_modal.style.webkitTransform='translateY(110%)';_modal.style.transform='translateY(110%)';}
+  var bg=document.getElementById('modal-bg');
+  bg.style.opacity='0';bg.style.pointerEvents='none';
+  _modal=null;
+  document.body.style.overflow='';
+}
+
+function swT(id,el){
+  var vs=document.querySelectorAll('.view');
+  for(var i=0;i<vs.length;i++)vs[i].style.display='none';
+  var bs=document.querySelectorAll('.tb');
+  for(var i=0;i<bs.length;i++){bs[i].style.color='#8B93B0';bs[i].style.borderBottomColor='transparent';}
+  document.getElementById(id).style.display='block';
+  if(el){el.style.color='#3B5BDB';el.style.borderBottomColor='#3B5BDB';}
+}
+
+function swE(idx,el){
+  var ps=document.querySelectorAll('.ent-panel');
+  for(var i=0;i<ps.length;i++)ps[i].style.display='none';
+  var bs=document.querySelectorAll('.eb');
+  for(var i=0;i<bs.length;i++){bs[i].style.color='#8B93B0';bs[i].style.borderBottomColor='transparent';}
+  document.getElementById('ep-'+idx).style.display='block';
+  if(el){el.style.color='#3B5BDB';el.style.borderBottomColor='#3B5BDB';}
+}
+</script>
+</body>
+</html>
